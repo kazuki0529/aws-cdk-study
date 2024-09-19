@@ -1,11 +1,18 @@
+import path from 'path';
 import { App, Stack, StackProps } from 'aws-cdk-lib';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 
 export class MyStack extends Stack {
   constructor(scope: Construct, id: string, props: StackProps = {}) {
     super(scope, id, props);
 
-    // define resources here...
+    new NodejsFunction(this, 'hello-world', {
+      entry: path.join(__dirname, 'lambda/hello-world.ts'),
+      handler: 'handler',
+      runtime: Runtime.NODEJS_LATEST,
+    });
   }
 }
 
