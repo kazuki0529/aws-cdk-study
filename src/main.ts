@@ -2,6 +2,7 @@ import path from 'path';
 import { App, Stack, StackProps } from 'aws-cdk-lib';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
 
 export class MyStack extends Stack {
@@ -12,6 +13,7 @@ export class MyStack extends Stack {
       entry: path.join(__dirname, 'lambda/hello-world.ts'),
       handler: 'handler',
       runtime: Runtime.NODEJS_LATEST,
+      logRetention: RetentionDays.THREE_MONTHS,
     });
   }
 }
