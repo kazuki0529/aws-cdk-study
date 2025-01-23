@@ -221,6 +221,42 @@ exports[`Snapshot 1`] = `
       },
       "Type": "AWS::IAM::Policy",
     },
+    "alerttopic3CCE1E95": {
+      "Properties": {
+        "FifoTopic": false,
+      },
+      "Type": "AWS::SNS::Topic",
+    },
+    "alerttopickazukisaitou73unristcojp4342F687": {
+      "Properties": {
+        "Endpoint": "kazuki.saitou.73u@nri-st.co.jp",
+        "Protocol": "email",
+        "TopicArn": {
+          "Ref": "alerttopic3CCE1E95",
+        },
+      },
+      "Type": "AWS::SNS::Subscription",
+    },
+    "erroralarm6CF2033A": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Ref": "alerttopic3CCE1E95",
+          },
+        ],
+        "AlarmName": "error-alarm",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "EvaluationPeriods": 1,
+        "MetricName": "Error",
+        "Namespace": "LogMetrics",
+        "Period": 60,
+        "Statistic": "Sum",
+        "Threshold": 1,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
     "helloworldA481721C": {
       "DependsOn": [
         "helloworldServiceRole3FFFDE20",
@@ -230,7 +266,7 @@ exports[`Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "03e4bf26ac5a6505682525d715a93b3c64caa62836954694aaf7f5f70337afa5.zip",
+          "S3Key": "388d04b5bb12584a1103bd57851c04606899694ec2d9bf0a76e2aeb78cfb1892.zip",
         },
         "Handler": "index.handler",
         "Role": {
@@ -242,6 +278,25 @@ exports[`Snapshot 1`] = `
         "Runtime": "nodejs18.x",
       },
       "Type": "AWS::Lambda::Function",
+    },
+    "helloworldLogGrouperrormetricfilterC077EB81": {
+      "Properties": {
+        "FilterPattern": "ERROR",
+        "LogGroupName": {
+          "Fn::GetAtt": [
+            "helloworldLogRetention24FF8ACC",
+            "LogGroupName",
+          ],
+        },
+        "MetricTransformations": [
+          {
+            "MetricName": "Error",
+            "MetricNamespace": "LogMetrics",
+            "MetricValue": "1",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
     },
     "helloworldLogRetention24FF8ACC": {
       "Properties": {
