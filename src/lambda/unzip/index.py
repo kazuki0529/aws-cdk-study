@@ -5,6 +5,7 @@ import tempfile
 import loguru
 from botocore.client import Config
 from boto3.s3.transfer import TransferConfig
+import pandas as pd
 
 s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
 logger = loguru.logger
@@ -42,7 +43,20 @@ def handler(event, context):
                                 file_info.filename}',
                             Config=TransferConfig(multipart_threshold=1024 * 25, max_concurrency=10, multipart_chunksize=1024 * 25, use_threads=True))
 
-    return {
-        'statusCode': 200,
-        'body': 'Files extracted and uploaded successfully'
-    }
+        # 解凍したファイルをPandasで読み込む
+        objects = s3_client.list_objects_v2(
+            Bucket=bucket_name, Prefix='original/')
+        logger.info(objects)
+        for file in objects['Contents']:
+            logger.info(file)
+            if file['Key'].endswith('.csv'):
+                logger.info(f'Reading CSV file: {file["Key"]}')
+                # S3から直接ファイル読込
+                df = pd.read_csv(f's3://{bucket_name}/{file["Key"]}')
+                logger.info(df.head())
+
+                # S3へ直接ファイル書込
+                df.to_csv(
+                    f's3://{bucket_name}/{file["Key"].replace('original/', 'extracted/')}', index=False)
+
+    return

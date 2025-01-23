@@ -60,13 +60,17 @@ export class MyStack extends Stack {
     });
     const unzip = new PythonFunction(this, 'unzip', {
       entry: path.join(__dirname, 'lambda/unzip'),
-      ephemeralStorageSize: Size.gibibytes(4),
+      ephemeralStorageSize: Size.gibibytes(1),
       memorySize: 4096,
+      timeout: Duration.minutes(15),
       runtime: Runtime.PYTHON_3_12,
       logRetention: RetentionDays.THREE_MONTHS,
     });
     bucket.grantReadWrite(unzip);
     bucket.addEventNotification(EventType.OBJECT_CREATED_PUT, new LambdaDestination(unzip), {
+      suffix: '.zip',
+    });
+    bucket.addEventNotification(EventType.OBJECT_CREATED_COMPLETE_MULTIPART_UPLOAD, new LambdaDestination(unzip), {
       suffix: '.zip',
     });
   }
