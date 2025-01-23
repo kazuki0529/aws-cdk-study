@@ -67,6 +67,10 @@
       "type": "build"
     },
     {
+      "name": "@aws-cdk/aws-lambda-python-alpha",
+      "type": "runtime"
+    },
+    {
       "name": "@types/aws-lambda",
       "type": "runtime"
     },
