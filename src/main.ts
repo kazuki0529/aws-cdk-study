@@ -1,10 +1,13 @@
 import path from 'path';
-import { App, Duration, Stack, StackProps } from 'aws-cdk-lib';
+import { PythonFunction } from '@aws-cdk/aws-lambda-python-alpha';
+import { App, Duration, RemovalPolicy, Size, Stack, StackProps } from 'aws-cdk-lib';
 import { ComparisonOperator, Metric, TreatMissingData } from 'aws-cdk-lib/aws-cloudwatch';
 import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { FilterPattern, RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { BlockPublicAccess, Bucket, EventType } from 'aws-cdk-lib/aws-s3';
+import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Construct } from 'constructs';
@@ -49,6 +52,23 @@ export class MyStack extends Stack {
       comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
       actionsEnabled: true,
     }).addAlarmAction(new SnsAction(alertTopic));
+
+
+    const bucket = new Bucket(this, 'bucket', {
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+    const unzip = new PythonFunction(this, 'unzip', {
+      entry: path.join(__dirname, 'lambda/unzip'),
+      ephemeralStorageSize: Size.gibibytes(4),
+      memorySize: 4096,
+      runtime: Runtime.PYTHON_3_12,
+      logRetention: RetentionDays.THREE_MONTHS,
+    });
+    bucket.grantReadWrite(unzip);
+    bucket.addEventNotification(EventType.OBJECT_CREATED_PUT, new LambdaDestination(unzip), {
+      suffix: '.zip',
+    });
   }
 }
 
